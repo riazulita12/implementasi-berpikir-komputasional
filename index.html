@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bongkar Pola — Berpikir Komputasional dengan Python</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#131B24; --panel:#1B2733; --panel-2:#20303F; --border:#2C3E4F;
+  --text:#E7EDF3; --muted:#8FA1B3;
+  --amber:#F2A93B; --green:#7EE787; --blue:#6FB7FF; --pink:#F2789F;
+  --radius:14px;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-sizing:border-box;
+}
+:root:not([data-theme="light"]){ }
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#F3F1EA; --panel:#FFFFFF; --panel-2:#F6F4EE; --border:#DFDACD;
+    --text:#20242A; --muted:#5B6470;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#F3F1EA; --panel:#FFFFFF; --panel-2:#F6F4EE; --border:#DFDACD;
+  --text:#20242A; --muted:#5B6470;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:'Inter',system-ui,-apple-system,Segoe UI,sans-serif;
+  font-size:16px; line-height:1.55;
+}
+h1,h2,h3,h4{font-family:'Sora',system-ui,sans-serif; margin:0 0 .4em; letter-spacing:-0.01em;}
+code,pre,.mono{font-family:'JetBrains Mono',Consolas,Menlo,monospace;}
+.app{display:flex; min-height:100vh;}
+
+/* Sidebar */
+.sidebar{
+  width:240px; flex-shrink:0; background:var(--panel);
+  border-right:1px solid var(--border);
+  padding:22px 14px; position:sticky; top:0; height:100vh; overflow-y:auto;
+  padding-top:calc(22px + env(safe-area-inset-top,0px));
+}
+.brand{display:flex; align-items:center; gap:10px; padding:0 8px 18px; }
+.brand .mark{
+  width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--amber),var(--pink));
+  display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0;
+}
+.brand span{font-family:'Sora'; font-weight:700; font-size:15.5px;}
+.progress-wrap{padding:0 8px 16px;}
+.progress-track{height:6px; background:var(--panel-2); border-radius:99px; overflow:hidden;}
+.progress-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--amber),var(--green)); transition:width .4s ease;}
+.progress-label{font-size:11.5px; color:var(--muted); margin-top:6px;}
+nav{display:flex; flex-direction:column; gap:3px;}
+.nav-btn{
+  display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+  background:none; border:none; color:var(--muted); font-family:'Inter'; font-size:14.5px; font-weight:500;
+  padding:10px 10px; border-radius:10px; cursor:pointer; transition:background .15s, color .15s;
+}
+.nav-btn .ic{width:20px; text-align:center; font-size:16px;}
+.nav-btn:hover{background:var(--panel-2); color:var(--text);}
+.nav-btn.active{background:var(--panel-2); color:var(--text);}
+.nav-btn .dot{margin-left:auto; width:7px; height:7px; border-radius:50%; background:var(--border);}
+.nav-btn.done .dot{background:var(--green);}
+
+/* Main */
+main{flex:1; min-width:0; padding:28px clamp(18px,4vw,52px) 60px;}
+.panel{display:none; animation:fade .35s ease;}
+.panel.active{display:block;}
+@keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+.eyebrow{color:var(--amber); font-weight:600; font-size:13px; margin-bottom:6px;}
+.lede{color:var(--muted); max-width:62ch; font-size:16.5px;}
+
+/* Hero (beranda) */
+.hero-title{font-size:clamp(28px,4vw,42px); max-width:14ch;}
+.pillar-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin-top:26px;}
+.pillar-tile{
+  background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+  padding:18px; cursor:pointer; transition:transform .15s, border-color .15s;
+}
+.pillar-tile:hover{transform:translateY(-3px); border-color:var(--amber);}
+.pillar-tile .ic{font-size:26px; margin-bottom:10px; display:block;}
+.pillar-tile h3{font-size:16.5px; margin-bottom:4px;}
+.pillar-tile p{color:var(--muted); font-size:13.5px; margin:0;}
+.flow{display:flex; align-items:center; gap:10px; margin:34px 0 8px; flex-wrap:wrap; font-family:'JetBrains Mono'; font-size:13.5px; color:var(--muted);}
+.flow b{color:var(--text); background:var(--panel-2); border:1px solid var(--border); padding:6px 12px; border-radius:8px;}
+
+/* Pillar sections */
+.pillar-head{display:flex; align-items:center; gap:14px; margin-bottom:6px;}
+.pillar-head .ic{
+  width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+  font-size:22px; background:var(--panel-2); border:1px solid var(--border); flex-shrink:0;
+}
+.card{
+  background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+  padding:22px; margin-top:20px;
+}
+.card h3{font-size:17px;}
+.card .tag{display:inline-block; font-size:11.5px; font-weight:600; color:var(--bg); background:var(--amber); padding:3px 9px; border-radius:99px; margin-bottom:10px;}
+pre.code{
+  background:#0F161D; border:1px solid var(--border); border-radius:10px; padding:16px 18px;
+  overflow-x:auto; font-size:13.5px; line-height:1.65; margin:12px 0;
+}
+:root[data-theme="light"] pre.code, @media (prefers-color-scheme:light){ }
+pre.code .k{color:var(--blue);} pre.code .s{color:var(--green);} pre.code .c{color:var(--muted);} pre.code .n{color:var(--amber);}
+.sim{background:var(--panel-2); border:1px solid var(--border); border-radius:10px; padding:16px; margin-top:12px;}
+.sim-row{display:flex; gap:10px; flex-wrap:wrap; align-items:end; margin-bottom:12px;}
+.field{display:flex; flex-direction:column; gap:5px;}
+.field label{font-size:12px; color:var(--muted);}
+.field input, .field select{
+  background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:8px;
+  padding:8px 10px; font-family:'JetBrains Mono'; font-size:13.5px; width:150px;
+}
+.run-btn{
+  background:var(--amber); color:#1B1305; border:none; border-radius:8px; padding:9px 16px;
+  font-weight:600; font-size:13.5px; cursor:pointer; font-family:'Inter';
+}
+.run-btn:hover{filter:brightness(1.08);}
+.out{
+  font-family:'JetBrains Mono'; font-size:13.5px; background:#0F161D; border:1px dashed var(--border);
+  border-radius:8px; padding:12px 14px; color:var(--green); min-height:20px; white-space:pre-wrap;
+}
+.out .lbl{color:var(--muted); display:block; margin-bottom:4px; font-family:'Inter';}
+.challenge{border-left:3px solid var(--pink); padding-left:16px; margin-top:18px;}
+.reveal-btn{
+  background:none; border:1px solid var(--border); color:var(--text); border-radius:8px;
+  padding:7px 13px; font-size:13px; cursor:pointer; margin-top:8px;
+}
+.answer{display:none; margin-top:10px;}
+.answer.show{display:block;}
+
+/* Quiz */
+.q-card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-top:16px;}
+.q-card p.qtext{font-weight:600; margin-bottom:12px;}
+.opt{
+  display:block; width:100%; text-align:left; background:var(--panel-2); border:1px solid var(--border);
+  color:var(--text); padding:10px 14px; border-radius:9px; margin-bottom:8px; cursor:pointer; font-size:14px;
+  font-family:'Inter'; transition:border-color .15s;
+}
+.opt:hover{border-color:var(--amber);}
+.opt.correct{border-color:var(--green); background:rgba(126,231,135,.12);}
+.opt.wrong{border-color:var(--pink); background:rgba(242,120,159,.12);}
+.opt[disabled]{cursor:default;}
+.exp{font-size:13px; color:var(--muted); margin-top:8px; display:none;}
+.exp.show{display:block;}
+.score-box{
+  background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:24px;
+  text-align:center; margin-top:20px; display:none;
+}
+.score-box.show{display:block;}
+.score-num{font-family:'Sora'; font-size:40px; font-weight:800; color:var(--amber);}
+
+footer{color:var(--muted); font-size:12.5px; margin-top:40px; border-top:1px solid var(--border); padding-top:16px;}
+
+/* mobile */
+.menu-btn{display:none;}
+@media (max-width:820px){
+  .app{flex-direction:column;}
+  .sidebar{
+    width:100%; height:auto; position:sticky; top:0; z-index:10; padding:14px 14px calc(14px + env(safe-area-inset-top,0px));
+    padding-top:calc(14px + env(safe-area-inset-top,0px));
+  }
+  .brand{padding-bottom:10px;}
+  nav{display:none; flex-direction:column; max-height:60vh; overflow-y:auto;}
+  nav.open{display:flex;}
+  .menu-btn{
+    display:block; margin-left:auto; background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+    border-radius:8px; padding:8px 12px; font-size:13px; cursor:pointer;
+  }
+  .brand{display:flex;}
+  main{padding:22px 16px 50px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="mark">🧩</div>
+      <span>Bongkar Pola</span>
+      <button class="menu-btn" id="menuBtn">Menu</button>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+      <div class="progress-label" id="progLabel">0 dari 6 bagian dipelajari</div>
+    </div>
+    <nav id="nav">
+      <button class="nav-btn" data-id="beranda"><span class="ic">🏠</span>Beranda</button>
+      <button class="nav-btn" data-id="dekomposisi"><span class="ic">🧩</span>Dekomposisi<span class="dot"></span></button>
+      <button class="nav-btn" data-id="pola"><span class="ic">🔁</span>Pengenalan Pola<span class="dot"></span></button>
+      <button class="nav-btn" data-id="abstraksi"><span class="ic">🎯</span>Abstraksi<span class="dot"></span></button>
+      <button class="nav-btn" data-id="algoritma"><span class="ic">🧭</span>Algoritma<span class="dot"></span></button>
+      <button class="nav-btn" data-id="kuis"><span class="ic">📝</span>Kuis Akhir<span class="dot"></span></button>
+    </nav>
+  </aside>
+
+  <main>
+    <!-- BERANDA -->
+    <section class="panel active" id="p-beranda">
+      <div class="eyebrow">Informatika · Kelas X Fase E</div>
+      <h1 class="hero-title">Setiap program besar dimulai dari cara berpikir kecil</h1>
+      <p class="lede">Berpikir komputasional punya empat kebiasaan berpikir yang saling melengkapi. Pelajari satu per satu, coba simulasinya langsung, lalu uji pemahamanmu di kuis akhir.</p>
+
+      <div class="flow">
+        <b>Masalah besar</b> → <b>Dekomposisi</b> → <b>Pengenalan Pola</b> → <b>Abstraksi</b> → <b>Algoritma</b> → <b>Kode Python</b>
+      </div>
+
+      <div class="pillar-grid">
+        <div class="pillar-tile" data-go="dekomposisi"><span class="ic">🧩</span><h3>Dekomposisi</h3><p>Memecah masalah besar jadi bagian-bagian kecil yang mudah dikerjakan.</p></div>
+        <div class="pillar-tile" data-go="pola"><span class="ic">🔁</span><h3>Pengenalan Pola</h3><p>Menemukan keteraturan agar solusi bisa dipakai berulang.</p></div>
+        <div class="pillar-tile" data-go="abstraksi"><span class="ic">🎯</span><h3>Abstraksi</h3><p>Memilih informasi penting, mengabaikan yang tidak perlu.</p></div>
+        <div class="pillar-tile" data-go="algoritma"><span class="ic">🧭</span><h3>Algoritma</h3><p>Menyusun langkah logis dan berurutan menuju solusi.</p></div>
+      </div>
+    </section>
+
+    <!-- DEKOMPOSISI -->
+    <section class="panel" id="p-dekomposisi">
+      <div class="pillar-head"><div class="ic">🧩</div><div><div class="eyebrow">Pilar 1</div><h2>Dekomposisi</h2></div></div>
+      <p class="lede">Memecah masalah besar menjadi bagian-bagian kecil sehingga lebih mudah diselesaikan satu per satu.</p>
+
+      <div class="card">
+        <span class="tag">Contoh · Program Kasir</span>
+        <h3>Kasir dipecah menjadi 5 langkah kecil</h3>
+        <p style="color:var(--muted); font-size:14px;">nama barang → harga → jumlah → hitung total → tampilkan struk</p>
+        <pre class="code" id="code-dek"></pre>
+        <div class="sim">
+          <div class="sim-row">
+            <div class="field"><label>Nama barang</label><input id="dek-nama" value="Pulpen"></div>
+            <div class="field"><label>Harga barang (Rp)</label><input id="dek-harga" type="number" value="3000"></div>
+            <div class="field"><label>Jumlah barang</label><input id="dek-jumlah" type="number" value="4"></div>
+            <button class="run-btn" onclick="runDek()">▶ Jalankan</button>
+          </div>
+          <div class="out"><span class="lbl">Output</span><span id="dek-out">Klik "Jalankan" untuk melihat struk.</span></div>
+        </div>
+      </div>
+
+      <div class="card challenge">
+        <h4>🎯 Tantangan</h4>
+        <p>Pecah masalah "membuat program penghitung luas dan keliling persegi panjang" menjadi langkah-langkah kecil, lalu tulis kodenya.</p>
+        <button class="reveal-btn" onclick="toggleAns('dek-ans')">Lihat contoh jawaban</button>
+        <div class="answer" id="dek-ans"><pre class="code">panjang = int(input("Panjang: "))
+lebar = int(input("Lebar: "))
+
+luas = panjang * lebar
+keliling = 2 * (panjang + lebar)
+
+print("Luas:", luas)
+print("Keliling:", keliling)</pre></div>
+      </div>
+    </section>
+
+    <!-- POLA -->
+    <section class="panel" id="p-pola">
+      <div class="pillar-head"><div class="ic">🔁</div><div><div class="eyebrow">Pilar 2</div><h2>Pengenalan Pola</h2></div></div>
+      <p class="lede">Menemukan kesamaan atau keteraturan antar masalah, sehingga satu logika bisa dipakai berulang kali.</p>
+
+      <div class="card">
+        <span class="tag">Contoh · Kategori Nilai</span>
+        <h3>Pola: makin tinggi nilai, makin tinggi kategori</h3>
+        <pre class="code" id="code-pola"></pre>
+        <div class="sim">
+          <div class="sim-row">
+            <div class="field"><label>Nilai (0–100)</label><input id="pola-nilai" type="number" value="82"></div>
+            <button class="run-btn" onclick="runPola()">▶ Jalankan</button>
+          </div>
+          <div class="out"><span class="lbl">Output</span><span id="pola-out">Ubah nilai lalu klik "Jalankan".</span></div>
+        </div>
+      </div>
+
+      <div class="card challenge">
+        <h4>🎯 Tantangan</h4>
+        <p>Ubah aturan menjadi lebih detail: 95–100 → A+, 90–94 → A, 85–89 → B+, 80–84 → B, 75–79 → C, &lt;75 → D. Bagaimana urutan <code>elif</code>-nya?</p>
+        <button class="reveal-btn" onclick="toggleAns('pola-ans')">Lihat contoh jawaban</button>
+        <div class="answer" id="pola-ans"><pre class="code">if nilai >= 95:
+    kategori = "A+"
+elif nilai >= 90:
+    kategori = "A"
+elif nilai >= 85:
+    kategori = "B+"
+elif nilai >= 80:
+    kategori = "B"
+elif nilai >= 75:
+    kategori = "C"
+else:
+    kategori = "D"</pre></div>
+      </div>
+    </section>
+
+    <!-- ABSTRAKSI -->
+    <section class="panel" id="p-abstraksi">
+      <div class="pillar-head"><div class="ic">🎯</div><div><div class="eyebrow">Pilar 3</div><h2>Abstraksi</h2></div></div>
+      <p class="lede">Memilih informasi yang penting untuk menyelesaikan masalah, dan mengabaikan detail yang tidak diperlukan.</p>
+
+      <div class="card">
+        <span class="tag">Contoh · Sistem Perpustakaan</span>
+        <h3>Dari 9 data buku, hanya 2 yang benar-benar dibutuhkan</h3>
+        <p style="color:var(--muted); font-size:14px;">judul, kode, penulis, tahun, halaman, harga, sampul, ukuran, <b style="color:var(--text)">status</b> → cukup pakai <b style="color:var(--text)">judul</b> &amp; <b style="color:var(--text)">status</b></p>
+        <pre class="code" id="code-abs"></pre>
+        <div class="sim">
+          <div class="sim-row">
+            <div class="field"><label>Judul buku</label><input id="abs-judul" value="Laskar Pelangi"></div>
+            <div class="field"><label>Status</label>
+              <select id="abs-status"><option value="tersedia">tersedia</option><option value="dipinjam">dipinjam</option></select>
+            </div>
+            <button class="run-btn" onclick="runAbs()">▶ Jalankan</button>
+          </div>
+          <div class="out"><span class="lbl">Output</span><span id="abs-out">Pilih status lalu klik "Jalankan".</span></div>
+        </div>
+      </div>
+
+      <div class="card challenge">
+        <h4>🎯 Tantangan</h4>
+        <p>Tambahkan data <code>nama_peminjam</code> dan <code>lama_pinjam</code>, lalu tampilkan info peminjaman hanya jika status "dipinjam".</p>
+        <button class="reveal-btn" onclick="toggleAns('abs-ans')">Lihat contoh jawaban</button>
+        <div class="answer" id="abs-ans"><pre class="code">judul = input("Judul buku: ")
+status = input("Status (tersedia/dipinjam): ")
+
+if status == "dipinjam":
+    peminjam = input("Nama peminjam: ")
+    lama = input("Lama pinjam (hari): ")
+    print(judul, "dipinjam oleh", peminjam, "selama", lama, "hari")
+else:
+    print(judul, "dapat dipinjam.")</pre></div>
+      </div>
+    </section>
+
+    <!-- ALGORITMA -->
+    <section class="panel" id="p-algoritma">
+      <div class="pillar-head"><div class="ic">🧭</div><div><div class="eyebrow">Pilar 4</div><h2>Algoritma</h2></div></div>
+      <p class="lede">Langkah-langkah sistematis dan logis untuk menyelesaikan masalah — program pada dasarnya adalah algoritma yang diterjemahkan ke bahasa pemrograman.</p>
+
+      <div class="card">
+        <span class="tag">Contoh · Kasir dengan Diskon</span>
+        <h3>Diskon 10% jika total belanja ≥ Rp100.000</h3>
+        <pre class="code" id="code-algo"></pre>
+        <div class="sim">
+          <div class="sim-row">
+            <div class="field"><label>Harga barang (Rp)</label><input id="algo-harga" type="number" value="25000"></div>
+            <div class="field"><label>Jumlah barang</label><input id="algo-jumlah" type="number" value="5"></div>
+            <button class="run-btn" onclick="runAlgo()">▶ Jalankan</button>
+          </div>
+          <div class="out"><span class="lbl">Output</span><span id="algo-out">Ubah angka lalu klik "Jalankan".</span></div>
+        </div>
+      </div>
+
+      <div class="card challenge">
+        <h4>🎯 Tantangan</h4>
+        <p>Tulis algoritma bahasa manusia dulu, baru kodenya: tentukan apakah sebuah tahun adalah tahun kabisat (habis dibagi 4, kecuali habis dibagi 100 tapi tidak habis dibagi 400).</p>
+        <button class="reveal-btn" onclick="toggleAns('algo-ans')">Lihat contoh jawaban</button>
+        <div class="answer" id="algo-ans"><pre class="code">tahun = int(input("Tahun: "))
+
+if (tahun % 4 == 0 and tahun % 100 != 0) or (tahun % 400 == 0):
+    print(tahun, "adalah tahun kabisat")
+else:
+    print(tahun, "bukan tahun kabisat")</pre></div>
+      </div>
+    </section>
+
+    <!-- KUIS -->
+    <section class="panel" id="p-kuis">
+      <div class="eyebrow">Uji Pemahaman</div>
+      <h2>Kuis Akhir — 8 Soal</h2>
+      <p class="lede">Dua soal untuk tiap pilar. Klik salah satu jawaban untuk melihat apakah benar.</p>
+      <div id="quizArea"></div>
+      <div class="score-box" id="scoreBox">
+        <div style="color:var(--muted); font-size:13px;">Skor kamu</div>
+        <div class="score-num" id="scoreNum">0/8</div>
+        <p id="scoreMsg" style="color:var(--muted); margin-top:6px;"></p>
+        <button class="run-btn" onclick="resetQuiz()">🔄 Ulangi Kuis</button>
+      </div>
+    </section>
+
+    <footer>Bongkar Pola — media belajar berpikir komputasional · Informatika Kelas X Fase E</footer>
+  </main>
+</div>
+
+<script>
+/* ---------- navigation ---------- */
+const navBtns = document.querySelectorAll('.nav-btn');
+const panels = document.querySelectorAll('.panel');
+let visited = [];
+try{ visited = JSON.parse(localStorage.getItem('ct-visited')||'[]'); }catch(e){ visited=[]; }
+
+function saveVisited(){ try{ localStorage.setItem('ct-visited', JSON.stringify(visited)); }catch(e){} }
+function updateProgress(){
+  const total = 5; // dekomposisi, pola, abstraksi, algoritma, kuis
+  const count = visited.filter(v=>v!=='beranda').length;
+  document.getElementById('progFill').style.width = Math.min(100,(count/total)*100)+'%';
+  document.getElementById('progLabel').textContent = count+' dari '+total+' bagian dipelajari';
+  navBtns.forEach(b=>{
+    b.classList.toggle('done', visited.includes(b.dataset.id) && b.dataset.id!=='beranda');
+  });
+}
+function goTo(id){
+  panels.forEach(p=>p.classList.toggle('active', p.id==='p-'+id));
+  navBtns.forEach(b=>b.classList.toggle('active', b.dataset.id===id));
+  if(!visited.includes(id)){ visited.push(id); saveVisited(); }
+  updateProgress();
+  window.scrollTo({top:0, behavior:'smooth'});
+  const nav = document.getElementById('nav'); nav.classList.remove('open');
+}
+navBtns.forEach(b=>b.addEventListener('click', ()=>goTo(b.dataset.id)));
+document.querySelectorAll('.pillar-tile').forEach(t=>t.addEventListener('click', ()=>goTo(t.dataset.go)));
+document.getElementById('menuBtn').addEventListener('click', ()=>document.getElementById('nav').classList.toggle('open'));
+if(!visited.includes('beranda')) visited.push('beranda');
+updateProgress();
+
+/* ---------- syntax highlight (ringan) ---------- */
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function hl(code){
+  let out = esc(code);
+  out = out.replace(/(#.*$)/gm, '<span class="c">$1</span>');
+  out = out.replace(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g, '<span class="s">$1</span>');
+  out = out.replace(/\b(if|elif|else|for|in|range|def|return|print|input|int|float|and|or)\b/g, '<span class="k">$1</span>');
+  return out;
+}
+function setCode(id, code){ document.getElementById(id).innerHTML = hl(code); }
+
+setCode('code-dek', `nama = input("Nama barang: ")
+harga = int(input("Harga barang: "))
+jumlah = int(input("Jumlah barang: "))
+
+total = harga * jumlah
+
+print("=== STRUK ===")
+print("Barang :", nama)
+print("Harga  :", harga)
+print("Jumlah :", jumlah)
+print("Total  :", total)`);
+
+setCode('code-pola', `nilai = int(input("Masukkan nilai: "))
+
+if nilai >= 90:
+    kategori = "Sangat Baik"
+elif nilai >= 80:
+    kategori = "Baik"
+elif nilai >= 75:
+    kategori = "Cukup"
+else:
+    kategori = "Belum Lulus"
+
+print("Kategori:", kategori)`);
+
+setCode('code-abs', `judul = input("Judul buku: ")
+status = input("Status buku (tersedia/dipinjam): ")
+
+if status == "tersedia":
+    print(judul, "dapat dipinjam.")
+else:
+    print(judul, "sedang dipinjam.")`);
+
+setCode('code-algo', `harga = int(input("Harga barang: "))
+jumlah = int(input("Jumlah barang: "))
+
+total = harga * jumlah
+
+if total >= 100000:
+    diskon = total * 10 / 100
+else:
+    diskon = 0
+
+total_bayar = total - diskon
+
+print("Total       :", total)
+print("Diskon      :", diskon)
+print("Total bayar :", total_bayar)`);
+
+/* ---------- simulasi (mencerminkan logika python di atas) ---------- */
+function runDek(){
+  const nama = document.getElementById('dek-nama').value || '-';
+  const harga = parseInt(document.getElementById('dek-harga').value)||0;
+  const jumlah = parseInt(document.getElementById('dek-jumlah').value)||0;
+  const total = harga*jumlah;
+  document.getElementById('dek-out').textContent =
+`=== STRUK ===
+Barang : ${nama}
+Harga  : ${harga}
+Jumlah : ${jumlah}
+Total  : ${total}`;
+}
+function runPola(){
+  const nilai = parseInt(document.getElementById('pola-nilai').value)||0;
+  let kategori;
+  if(nilai>=90) kategori="Sangat Baik";
+  else if(nilai>=80) kategori="Baik";
+  else if(nilai>=75) kategori="Cukup";
+  else kategori="Belum Lulus";
+  document.getElementById('pola-out').textContent = "Kategori: "+kategori;
+}
+function runAbs(){
+  const judul = document.getElementById('abs-judul').value || '-';
+  const status = document.getElementById('abs-status').value;
+  document.getElementById('abs-out').textContent =
+    status==='tersedia' ? `${judul} dapat dipinjam.` : `${judul} sedang dipinjam.`;
+}
+function runAlgo(){
+  const harga = parseInt(document.getElementById('algo-harga').value)||0;
+  const jumlah = parseInt(document.getElementById('algo-jumlah').value)||0;
+  const total = harga*jumlah;
+  const diskon = total>=100000 ? total*10/100 : 0;
+  const bayar = total-diskon;
+  document.getElementById('algo-out').textContent =
+`Total       : ${total}
+Diskon      : ${diskon}
+Total bayar : ${bayar}`;
+}
+function toggleAns(id){ document.getElementById(id).classList.toggle('show'); }
+runDek(); runPola(); runAbs(); runAlgo();
+
+/* ---------- kuis ---------- */
+const quiz = [
+  {p:"Dekomposisi", q:'Program kasir dipecah menjadi: input nama, input harga, input jumlah, hitung total, tampilkan struk. Ini contoh penerapan pilar apa?',
+   opts:["Abstraksi","Dekomposisi","Pengenalan Pola","Algoritma"], correct:1,
+   exp:"Memecah satu masalah besar (program kasir) menjadi beberapa bagian kecil adalah ciri utama dekomposisi."},
+  {p:"Dekomposisi", q:'Manfaat utama memecah masalah menjadi bagian kecil sebelum coding adalah...',
+   opts:["Kode jadi lebih pendek otomatis","Lebih mudah ditelusuri saat terjadi kesalahan (debugging)","Tidak perlu input dari pengguna","Program berjalan lebih cepat"], correct:1,
+   exp:"Bagian-bagian kecil lebih mudah diperiksa satu per satu ketika terjadi error, dibanding satu blok kode besar."},
+  {p:"Pengenalan Pola", q:'Pada deret 2, 4, 6, 8, 10 — pola yang ditemukan sehingga bisa ditulis range(2, 11, 2) adalah...',
+   opts:["Angka acak","Angka bertambah 2 setiap suku","Angka dikali 2","Angka ganjil"], correct:1,
+   exp:"Setiap suku bertambah 2 dari suku sebelumnya, itulah pola yang diterjemahkan ke range(mulai, batas, langkah)."},
+  {p:"Pengenalan Pola", q:'Aturan "nilai >= 90 → Sangat Baik, nilai >= 80 → Baik, ..." dibuat berdasarkan pola bahwa...',
+   opts:["Nilai selalu 100","Nilai tinggi berkaitan dengan kategori lebih tinggi","Kategori dipilih acak","Nilai tidak memengaruhi kategori"], correct:1,
+   exp:"Polanya: semakin tinggi nilai, semakin tinggi pula kategorinya — pola ini diterjemahkan jadi if-elif berurutan."},
+  {p:"Abstraksi", q:'Dari 9 data buku (judul, kode, penulis, tahun, halaman, harga, sampul, ukuran, status), program peminjaman cukup memakai judul & status. Ini contoh...',
+   opts:["Algoritma","Dekomposisi","Abstraksi","Pengenalan Pola"], correct:2,
+   exp:"Memilih informasi penting (judul, status) dan mengabaikan yang tidak relevan (warna sampul, ukuran, dll) adalah abstraksi."},
+  {p:"Abstraksi", q:'Pada kalkulator sederhana, mengapa data seperti "lokasi pengguna" atau "warna layar" tidak dimasukkan ke program?',
+   opts:["Karena tidak relevan untuk menghitung angka1 operator angka2","Karena Python tidak bisa membaca teks","Karena data itu berbahaya","Karena harus selalu berupa angka"], correct:0,
+   exp:"Abstraksi berarti hanya memasukkan data yang relevan dengan tugas program — di sini hanya dua angka dan operatornya."},
+  {p:"Algoritma", q:'Urutan "Mulai → Masukkan sisi → Hitung luas → Tampilkan luas → Selesai" adalah contoh dari...',
+   opts:["Abstraksi","Algoritma","Pengenalan Pola","Dekomposisi"], correct:1,
+   exp:"Langkah-langkah runtut dan logis menuju solusi adalah definisi algoritma."},
+  {p:"Algoritma", q:'Pada program kasir dengan diskon, struktur if/else digunakan untuk...',
+   opts:["Mengulang input berkali-kali","Mengambil keputusan: apakah total belanja berhak diskon atau tidak","Menyimpan data barang","Mengurutkan nama barang"], correct:1,
+   exp:"if/else pada algoritma ini memutuskan apakah total >= 100000, sehingga menentukan besar diskon."},
+];
+let score = 0, answered = 0;
+function renderQuiz(){
+  const area = document.getElementById('quizArea');
+  area.innerHTML = '';
+  score = 0; answered = 0;
+  document.getElementById('scoreBox').classList.remove('show');
+  quiz.forEach((item, qi)=>{
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.innerHTML = `<span class="tag">${item.p} · Soal ${qi+1}</span><p class="qtext">${item.q}</p>` +
+      item.opts.map((o,oi)=>`<button class="opt" data-qi="${qi}" data-oi="${oi}">${o}</button>`).join('') +
+      `<p class="exp" id="exp-${qi}">${item.exp}</p>`;
+    area.appendChild(card);
+  });
+  area.querySelectorAll('.opt').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const qi = +btn.dataset.qi, oi = +btn.dataset.oi;
+      const group = area.querySelectorAll(`.opt[data-qi="${qi}"]`);
+      if(group[0].disabled) return;
+      group.forEach(b=>{
+        b.disabled = true;
+        if(+b.dataset.oi === quiz[qi].correct) b.classList.add('correct');
+        else if(+b.dataset.oi === oi) b.classList.add('wrong');
+      });
+      document.getElementById('exp-'+qi).classList.add('show');
+      if(oi === quiz[qi].correct) score++;
+      answered++;
+      if(!visited.includes('kuis-selesai')){}
+      if(answered === quiz.length) finishQuiz();
+    });
+  });
+}
+function finishQuiz(){
+  const box = document.getElementById('scoreBox');
+  box.classList.add('show');
+  document.getElementById('scoreNum').textContent = score+'/8';
+  let msg = 'Terus berlatih, ya!';
+  if(score>=7) msg = 'Luar biasa! Kamu paham keempat pilar dengan baik.';
+  else if(score>=5) msg = 'Bagus! Sedikit lagi menguasai semua pilar.';
+  document.getElementById('scoreMsg').textContent = msg;
+}
+function resetQuiz(){ renderQuiz(); }
+renderQuiz();
+</script>
+</body>
+</html>
